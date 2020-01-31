@@ -34,11 +34,6 @@ exports.addQuestion = functions.https.onRequest(async (req, res) => {
 	    console.log("answer  :" , answer);
 	    console.log("quesId  :" , quesId);
 
-	    
-	    //getTotalQuestionCount();
-	    
-	    console.log("quesCount  :" , quesCount);
-
 	    const ques = {
 	    	"answer" : answer,
 	    	"question" : question
@@ -52,18 +47,22 @@ exports.addQuestion = functions.https.onRequest(async (req, res) => {
 
 	    return res.status(200).send('Question insert ok');
   } catch (error) {
-  		/*var retVal = "error" :{
-  			"status" : 400,
-  			"req" : req,
-  			"message": error.message
-  		}*/
-  		console.log("req body  :", req.body)
-  		console.log("req query :", req.query)
-  		console.log("req params:", req.params)
-    	return res.status(400).send(req.body + " - " + error.message);
+  		/*var json = JSON.stringify({
+  			"request":req.query,
+  			"message":error.message
+  		});*/
+
+    	return res.status(400).send(getErrorMessage(req, error));
   }
 });
 
+function getErrorMessage(req, error){
+	var json = JSON.stringify({
+  		"request":req.query,
+  		"message":error.message
+  	});
+	return json;
+}
 
 /*function getTotalQuestionCount() {
 	var ref = firebase.database().ref('QUES/');
