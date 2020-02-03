@@ -107,9 +107,7 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
     		}
     	}else if(idList !== null && idList !== undefined){
 
-            //var array = JSON.parse("[" + idList + "]");
             var array = JSON.parse(idList);
-            console.log('array:' , array);
 
             var listRefForId = admin.database().ref('/' + DB_QUESTIONS);
             var listenerForId = listRefForId.on('value', snapshot =>  {
@@ -118,24 +116,18 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
                 snapshot.forEach(childSnapshot => {
                     var key = childSnapshot.key;
                     
-                    console.log('key:' , key);
-
-                    for(var id in array){
-
-                        console.log('  -->id:' + id + '  -->key:' + key);
-
-                        if(id === key){
-                            snapshotMap.set(key, childSnapshot.val());
-                            break;
-                        }
-                    } 
+                    array.every(function(element, index) {
+                      if (element === key) {
+                        snapshotMap.set(key, childSnapshot.val());
+                        return false;
+                      }
+                      else return true;
+                    })
                 });
 
                 const myJson = {};
                 myJson.snapshotMap = mapToObj(snapshotMap);
-
                 const json = JSON.stringify(myJson);
-                console.log('json for idList:' , json);
                     
                 listRefForId.off('value', listenerForId);
                 return res.status(200).send(json);
@@ -148,8 +140,6 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
     	return res.status(400).send(getErrorMessage(req, error));
   }
 });
-
-
 
 //***************************GAME FUNCTIONS ***********************************************
 
