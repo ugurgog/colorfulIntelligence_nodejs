@@ -63,6 +63,7 @@ exports.saveQuestion = functions.https.onRequest(async (req, res) => {
 });
 
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listQuestions?type=ALL
+// type=ALL, type=ACTIVE, type=PASSIVE
 exports.listQuestions = functions.https.onRequest(async (req, res) => {
     console.log("listQuestions******************************" );
     
@@ -76,18 +77,12 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
     			var listRef = admin.database().ref('/' + DB_QUESTIONS);
     			var listener = listRef.on('value', function(snapshot) {
 
-					console.log('snapshot.val():' , snapshot.val());
-  					console.log('snapshot.key  :' , snapshot.key);
-
     				var snapshotMap = new Map();
 
     				snapshot.forEach(function(childSnapshot) {
 					      var key = childSnapshot.key;
 					      var isActive = childSnapshot.val().isActive;
 
-					      console.log('--->key:' , key);
-					      console.log('--->val:' , childSnapshot.val());
-					      
 					      if(type === LIST_TYPE_ALL){
 					      	snapshotMap.set(key, childSnapshot.val());
 					      }else if(type === LIST_TYPE_ACTIVE && isActive === true){
@@ -96,10 +91,14 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
 					      	snapshotMap.set(key, childSnapshot.val());
 					      }
 					});
-    				console.log('snapshotMap:' , snapshotMap);
+                    const myJson = {};
+                    myJson.snapshotMap = mapToObj(snapshotMap);
+
+                    const json = JSON.stringify(myJson);
+                    console.log('json:' , json);
   					
 					listRef.off('value', listener);
-					return res.status(200).send(snapshotMap);
+					return res.status(200).send(json);
 				});
     		}
     	}else{
@@ -155,6 +154,14 @@ function getErrorMessage(req, error){
   		"message":error.message
   	});
 	return json;
+}
+
+function mapToObj(map){
+  var obj = {}
+  map.forEach(function(v, k){
+    obj[k] = v
+  })
+  return obj
 }
 
 /*function getTotalQuestionCount() {
