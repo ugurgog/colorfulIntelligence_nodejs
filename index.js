@@ -63,23 +63,27 @@ exports.saveQuestion = functions.https.onRequest(async (req, res) => {
 });
 
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listQuestions?type=ALL
+// https://us-central1-colorful-intelligence.cloudfunctions.net/listQuestions?idList=["-M-6_N8bWkBbZmwxSEOk","ddfdf"]
 // type=ALL, type=ACTIVE, type=PASSIVE
 exports.listQuestions = functions.https.onRequest(async (req, res) => {
     console.log("listQuestions******************************" );
     
     try {
     	var type = req.query.type;
+        var idList = req.query.idList;
+
+        console.log('idList:' , idList);
 
     	if(type !== null && type !== undefined){
     		if(type !== LIST_TYPE_PASSIVE && type !== LIST_TYPE_ACTIVE && type !== LIST_TYPE_ALL){
     			return res.status(400).send(getErrorMessage(req, 'List type is invalid!'));
     		}else{
     			var listRef = admin.database().ref('/' + DB_QUESTIONS);
-    			var listener = listRef.on('value', function(snapshot) {
+    			var listener = listRef.on('value', snapshot => {
 
     				var snapshotMap = new Map();
 
-    				snapshot.forEach(function(childSnapshot) {
+    				snapshot.forEach(childSnapshot => {
 					      var key = childSnapshot.key;
 					      var isActive = childSnapshot.val().isActive;
 
@@ -101,13 +105,51 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
 					return res.status(200).send(json);
 				});
     		}
-    	}else{
+    	}else if(idList !== null && idList !== undefined){
+
+            //var array = JSON.parse("[" + idList + "]");
+            var array = JSON.parse(idList);
+            console.log('array:' , array);
+
+            var listRefForId = admin.database().ref('/' + DB_QUESTIONS);
+            var listenerForId = listRefForId.on('value', snapshot =>  {
+                var snapshotMap = new Map();
+
+                snapshot.forEach(childSnapshot => {
+                    var key = childSnapshot.key;
+                    
+                    console.log('key:' , key);
+
+                    for(var id in array){
+
+                        console.log('  -->id:' + id + '  -->key:' + key);
+
+                        if(id === key){
+                            snapshotMap.set(key, childSnapshot.val());
+                            break;
+                        }
+                    } 
+                });
+
+                const myJson = {};
+                myJson.snapshotMap = mapToObj(snapshotMap);
+
+                const json = JSON.stringify(myJson);
+                console.log('json for idList:' , json);
+                    
+                listRefForId.off('value', listenerForId);
+                return res.status(200).send(json);
+            });
+
+        }else{
     		return res.status(400).send(getErrorMessage(req, 'List type is null or undefined!'));
     	}
   } catch (error) {
     	return res.status(400).send(getErrorMessage(req, error));
   }
 });
+
+
 
 //***************************GAME FUNCTIONS ***********************************************
 
@@ -158,7 +200,7 @@ function getErrorMessage(req, error){
 
 function mapToObj(map){
   var obj = {}
-  map.forEach(function(v, k){
+  map.forEach((v, k) => {
     obj[k] = v
   })
   return obj
