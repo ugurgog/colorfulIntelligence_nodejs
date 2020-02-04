@@ -12,6 +12,7 @@ const admin = require('firebase-admin');
 // Firebase Db names
 const DB_QUESTIONS = 'QUESTIONS';
 const DB_GAME = 'GAME';
+const DB_GAME_WINNERS = 'GAME_WINNERS';
 const DB_USER = 'USER';
 
 // Question list types
@@ -225,7 +226,7 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
 // https://us-central1-colorful-intelligence.cloudfunctions.net/saveGame?reqQuery={"endTime" : "22.03.2020","gameName" : "oyun1","totalQuestionCount": 30, "questionList":[1,2,3],"statusId":1}
 // https://us-central1-colorful-intelligence.cloudfunctions.net/saveGame?reqQuery={"endTime" : "22.03.2020","gameName" : "oyun1","totalQuestionCount": 30, "questionList":[1,2,3],"statusId":1}&id=-M-6OSOZC7j6KCoQakLT
 exports.saveGame = functions.https.onRequest(async (req, res) => {
-    console.log("addGame******************************" );
+    console.log("saveGame******************************" );
     
     try {
         const reqQuery = req.query.reqQuery;
@@ -251,17 +252,20 @@ exports.saveGame = functions.https.onRequest(async (req, res) => {
 
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listGames?gameId=-M-6OSOZC7j6KCoQakLT
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listGames?idList=["-M-6OSOZC7j6KCoQakLT", "game1"]
+// https://us-central1-colorful-intelligence.cloudfunctions.net/listGames?type=ALL
+// type=ALL, type=ACTIVE, type=PASSIVE
 exports.listGames = functions.https.onRequest(async (req, res) => {
     console.log("listGames******************************" );
     
     try {
         var gameId = req.query.gameId;
         var idList = req.query.idList;
+        var type = req.query.type;
 
         if(gameId !== null && gameId !== undefined){
-            var listRef = admin.database().ref('/' + DB_GAME + '/' + gameId);
-            var listener = listRef.on('value', snapshot => {
-                listRef.off('value', listener);
+            var listRefGame = admin.database().ref('/' + DB_GAME + '/' + gameId);
+            var listenerGame = listRefGame.on('value', snapshot => {
+                listRefGame.off('value', listenerGame);
                 return res.status(200).send(snapshot.val());
             });
         }else if(idList !== null && idList !== undefined){
@@ -292,13 +296,77 @@ exports.listGames = functions.https.onRequest(async (req, res) => {
                 return res.status(200).send(json);
             });
 
+        }else if(type !== null && type !== undefined){
+            if(type !== LIST_TYPE_PASSIVE && type !== LIST_TYPE_ACTIVE && type !== LIST_TYPE_ALL){
+                return res.status(400).send(getErrorMessage(req, 'List type is invalid!'));
+            }else{
+                var listRef = admin.database().ref('/' + DB_GAME);
+                var listener = listRef.on('value', snapshot => {
+
+                    var snapshotMap = new Map();
+
+                    snapshot.forEach(childSnapshot => {
+                          var key = childSnapshot.key;
+                          var isActive = childSnapshot.val().isActive;
+
+                          if(type === LIST_TYPE_ALL){
+                            snapshotMap.set(key, childSnapshot.val());
+                          }else if(type === LIST_TYPE_ACTIVE && isActive === true){
+                            snapshotMap.set(key, childSnapshot.val());
+                          }else if(type === LIST_TYPE_PASSIVE && isActive === false){
+                            snapshotMap.set(key, childSnapshot.val());
+                          }
+                    });
+                    const myJson = {};
+                    myJson.snapshotMap = mapToObj(snapshotMap);
+
+                    const json = JSON.stringify(myJson);
+                    console.log('json:' , json);
+                    
+                    listRef.off('value', listener);
+                    return res.status(200).send(json);
+                });
+            }
+           
         }else{
-            return res.status(400).send(getErrorMessage(req, 'GameId or idList is null or undefined!'));
+            return res.status(400).send(getErrorMessage(req, 'GameId, idList or list type is null or undefined!'));
         }
   } catch (error) {
         return res.status(400).send(getErrorMessage(req, error));
   }
 });
+
+
+//***************************GAME WINNERS FUNCTIONS ***********************************************
+
+// https://us-central1-colorful-intelligence.cloudfunctions.net/saveGameWinner?gameId=-M-6OSOZC7j6KCcccc&userId=userxxx&reqQuery={"gameName":"game2","score":80,"giftId":2}
+exports.saveGameWinner = functions.https.onRequest(async (req, res) => {
+    console.log("addGame******************************" );
+    
+    try {
+        var reqQuery = req.query.reqQuery;
+        var gameId = req.query.gameId;
+        var userId = req.query.userId;
+
+        var jsonResponse = JSON.parse(reqQuery);
+
+        if (jsonResponse.status === 0) {
+            return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
+        } else {
+            if((userId !== null && userId !== undefined) && (gameId !== null && gameId !== undefined)){
+                const snapshot = await admin.database().ref('/' + DB_GAME_WINNERS + '/' + gameId + '/' + userId).set(jsonResponse);
+            }
+            else{
+                return res.status(400).send(getErrorMessage(req, 'GameId or UserId is not valid!'));
+            }
+        }
+
+        return res.status(200).send('Game Winners update successful');
+  } catch (error) {
+        return res.status(400).send(getErrorMessage(req, error));
+  }
+});
+
 
 //***************************CUSTOM FUNCTIONS ***********************************************
 
