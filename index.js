@@ -399,8 +399,13 @@ exports.listGameWinners = functions.https.onRequest(async (req, res) => {
                         var userFound = tempSnapshot.key;
                         console.log('userFound:', userFound);
 
-                        if(userFound === userId)
-                            snapshotMap.set(gameId, tempSnapshot);
+                        if(userFound === userId){
+                            var json = JSON.parse({
+                                userFound:tempSnapshot
+                            });
+                            //snapshotMap.set(gameId, tempSnapshot);
+                            snapshotMap.set(gameId, JSON.stringfy(json));
+                        }
                     });       
                 });
                 console.log('snapshotMap:' , snapshotMap);
