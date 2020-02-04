@@ -367,6 +367,86 @@ exports.saveGameWinner = functions.https.onRequest(async (req, res) => {
   }
 });
 
+// https://us-central1-colorful-intelligence.cloudfunctions.net/listGameWinners?gameId=-M-6OSOZC7j6KCcccc
+// https://us-central1-colorful-intelligence.cloudfunctions.net/listGameWinners?idList=["-M-6OSOZC7j6KCcccc", "-M-6OSOZC7j6KCxxx"]
+// https://us-central1-colorful-intelligence.cloudfunctions.net/listGameWinners?userId=userxcc
+exports.listGameWinners = functions.https.onRequest(async (req, res) => {
+    console.log("listGameWinners******************************" );
+    
+    try {
+        var gameId = req.query.gameId;
+        var idList = req.query.idList;
+        var userId = req.query.userId;
+
+        if(gameId !== null && gameId !== undefined){
+            var listRefGame = admin.database().ref('/' + DB_GAME_WINNERS + '/' + gameId);
+            var listenerGame = listRefGame.on('value', snapshot => {
+                listRefGame.off('value', listenerGame);
+                return res.status(200).send(snapshot.val());
+            });
+        }else if(userId !== null && userId !== undefined){
+            
+            var snapshotMap = new Map();
+
+            var listRefUser = admin.database().ref('/' + DB_GAME_WINNERS);
+            var listenerUser = listRefUser.on('value', snapshot =>  {
+                
+                snapshot.forEach(childSnapshot => {
+                    var gameId = childSnapshot.key;
+                    console.log('gameId:', gameId);
+
+                    childSnapshot.forEach(tempSnapshot =>{ 
+                        var userFound = tempSnapshot.key;
+                        console.log('userFound:', userFound);
+
+                        if(userFound === userId)
+                            snapshotMap.set(gameId, tempSnapshot);
+                    });       
+                });
+                console.log('snapshotMap:' , snapshotMap);
+                const myJson = {};
+                myJson.snapshotMap = mapToObj(snapshotMap);
+                const json = JSON.stringify(myJson);
+                console.log('json:' , json);
+
+                listRefUser.off('value', listenerUser);
+                return res.status(200).send(json);
+            });
+        }else if(idList !== null && idList !== undefined){
+
+            var array = JSON.parse(idList);
+
+            var listRefForId = admin.database().ref('/' + DB_GAME_WINNERS);
+            var listenerForId = listRefForId.on('value', snapshot =>  {
+                var snapshotMap = new Map();
+
+                snapshot.forEach(childSnapshot => {
+                    var key = childSnapshot.key;
+                    
+                    array.every((element, index) => {
+                      if (element === key) {
+                        snapshotMap.set(key, childSnapshot.val());
+                        return false;
+                      }
+                      else return true;
+                    })
+                });
+
+                const myJson = {};
+                myJson.snapshotMap = mapToObj(snapshotMap);
+                const json = JSON.stringify(myJson);
+                    
+                listRefForId.off('value', listenerForId);
+                return res.status(200).send(json);
+            });
+
+        }else{
+            return res.status(400).send(getErrorMessage(req, 'GameId or idList is null or undefined!'));
+        }
+  } catch (error) {
+        return res.status(400).send(getErrorMessage(req, error));
+  }
+});
 
 //***************************CUSTOM FUNCTIONS ***********************************************
 
