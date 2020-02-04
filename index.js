@@ -21,17 +21,6 @@ const LIST_TYPE_ALL = 'ALL';
 
 admin.initializeApp();
 
-
-//  https://us-central1-colorful-intelligence.cloudfunctions.net/addMessage?text=uppercaseme
-exports.addMessage = functions.https.onRequest(async (req, res) => {
-    // Grab the text parameter.
-    const original = req.query.text;
-    // Push the new message into the Realtime Database using the Firebase Admin SDK.
-    const snapshot = await admin.database().ref('/messages').push({ original: original });
-    // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
-    res.redirect(303, snapshot.ref.toString());
-});
-
 //***************************USER FUNCTIONS ***********************************************
 
 // https://us-central1-colorful-intelligence.cloudfunctions.net/saveUser?reqQuery={"name" : "UU","profilePhotoUrl" : "XX","createDate": "22.03.2020"}&userid=-M-6OgowiJqdmdYcccc
@@ -165,8 +154,6 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
         var type = req.query.type;
         var idList = req.query.idList;
 
-        console.log('idList:' , idList);
-
         if(type !== null && type !== undefined){
             if(type !== LIST_TYPE_PASSIVE && type !== LIST_TYPE_ACTIVE && type !== LIST_TYPE_ALL){
                 return res.status(400).send(getErrorMessage(req, 'List type is invalid!'));
@@ -201,7 +188,6 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
         }else if(idList !== null && idList !== undefined){
 
             var array = JSON.parse(idList);
-
             var listRefForId = admin.database().ref('/' + DB_QUESTIONS);
             var listenerForId = listRefForId.on('value', snapshot =>  {
                 var snapshotMap = new Map();
@@ -243,15 +229,8 @@ exports.saveGame = functions.https.onRequest(async (req, res) => {
     
     try {
         const reqQuery = req.query.reqQuery;
-
         var id = req.query.id;
-
-        console.log("reqQuery:" , reqQuery);
-        console.log("id:" , id);
-
         var jsonResponse = JSON.parse(reqQuery);
-
-        console.log("jsonResponse:" , jsonResponse);
 
         if (jsonResponse.status === 0) {
             return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
@@ -270,6 +249,56 @@ exports.saveGame = functions.https.onRequest(async (req, res) => {
   }
 });
 
+// https://us-central1-colorful-intelligence.cloudfunctions.net/listGames?gameId=-M-6OSOZC7j6KCoQakLT
+// https://us-central1-colorful-intelligence.cloudfunctions.net/listGames?idList=["-M-6OSOZC7j6KCoQakLT", "game1"]
+exports.listGames = functions.https.onRequest(async (req, res) => {
+    console.log("listGames******************************" );
+    
+    try {
+        var gameId = req.query.gameId;
+        var idList = req.query.idList;
+
+        if(gameId !== null && gameId !== undefined){
+            var listRef = admin.database().ref('/' + DB_GAME + '/' + gameId);
+            var listener = listRef.on('value', snapshot => {
+                listRef.off('value', listener);
+                return res.status(200).send(snapshot.val());
+            });
+        }else if(idList !== null && idList !== undefined){
+
+            var array = JSON.parse(idList);
+
+            var listRefForId = admin.database().ref('/' + DB_GAME);
+            var listenerForId = listRefForId.on('value', snapshot =>  {
+                var snapshotMap = new Map();
+
+                snapshot.forEach(childSnapshot => {
+                    var key = childSnapshot.key;
+                    
+                    array.every((element, index) => {
+                      if (element === key) {
+                        snapshotMap.set(key, childSnapshot.val());
+                        return false;
+                      }
+                      else return true;
+                    })
+                });
+
+                const myJson = {};
+                myJson.snapshotMap = mapToObj(snapshotMap);
+                const json = JSON.stringify(myJson);
+                    
+                listRefForId.off('value', listenerForId);
+                return res.status(200).send(json);
+            });
+
+        }else{
+            return res.status(400).send(getErrorMessage(req, 'GameId or idList is null or undefined!'));
+        }
+  } catch (error) {
+        return res.status(400).send(getErrorMessage(req, error));
+  }
+});
 
 //***************************CUSTOM FUNCTIONS ***********************************************
 
