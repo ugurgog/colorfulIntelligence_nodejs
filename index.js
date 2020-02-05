@@ -219,7 +219,6 @@ exports.saveQuestion = functions.https.onRequest(async (req, res) => {
                 id = snapshot.ref.toString();
             }
         }
-
         var json = JSON.stringify({
             "id":id,
             "message":"Question update successful"
@@ -287,7 +286,6 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
                 listRefForId.off('value', listenerForId);
                 return res.status(200).send(getJSONFromMap(snapshotMap));
             });
-
         }else{
             return res.status(400).send(getErrorMessage(req, 'List type or idList is null or undefined!'));
         }
@@ -324,7 +322,6 @@ exports.saveGame = functions.https.onRequest(async (req, res) => {
                "message":"Game update successful"
             });
         }
-
         return res.status(200).send(json);
   } catch (error) {
         return res.status(400).send(getErrorMessage(req, error));
@@ -407,7 +404,6 @@ exports.listGames = functions.https.onRequest(async (req, res) => {
   }
 });
 
-
 //***************************GAME WINNERS FUNCTIONS ***********************************************
 
 // https://us-central1-colorful-intelligence.cloudfunctions.net/saveGameWinner?gameId=-M-6OSOZC7j6KCcccc&userId=userxxx&reqQuery={"gameName":"game2","score":80,"giftId":2}
@@ -462,7 +458,6 @@ exports.listGameWinners = functions.https.onRequest(async (req, res) => {
 
             var listRefUser = admin.database().ref('/' + DB_GAME_WINNERS);
             var listenerUser = listRefUser.on('value', snapshot =>  {
-                
                 snapshot.forEach(childSnapshot => {
                     var gameId = childSnapshot.key;
 
@@ -500,7 +495,6 @@ exports.listGameWinners = functions.https.onRequest(async (req, res) => {
                 listRefForId.off('value', listenerForId);
                 return res.status(200).send(getJSONFromMap(snapshotMap));
             });
-
         }else{
             return res.status(400).send(getErrorMessage(req, 'GameId or idList is null or undefined!'));
         }
@@ -564,7 +558,6 @@ exports.saveGameGift = functions.https.onRequest(async (req, res) => {
                "message":"Game Gift update successful"
             });
         }
-
         return res.status(200).send(json);
   } catch (error) {
         return res.status(400).send(getErrorMessage(req, error));
@@ -612,7 +605,6 @@ exports.listGameGifts = functions.https.onRequest((req, res) => {
                 listRefForId.off('value', listenerForId);
                 return res.status(200).send(getJSONFromMap(snapshotMap));
             });
-
         }else if(type !== null && type !== undefined){
             if(type !== LIST_TYPE_PASSIVE && type !== LIST_TYPE_ACTIVE && type !== LIST_TYPE_ALL){
                 return res.status(400).send(getErrorMessage(req, 'List type is invalid!'));
@@ -638,7 +630,6 @@ exports.listGameGifts = functions.https.onRequest((req, res) => {
                     return res.status(200).send(getJSONFromMap(snapshotMap));
                 });
             }
-           
         }else{
             return res.status(400).send(getErrorMessage(req, 'GiftId, idList or list type is null or undefined!'));
         }
@@ -677,7 +668,6 @@ exports.saveUserGame = functions.https.onRequest(async (req, res) => {
                "message":"User Game update successful"
             });
         }
-
         return res.status(200).send(json);
   } catch (error) {
         return res.status(400).send(getErrorMessage(req, error));
@@ -692,16 +682,11 @@ exports.listUserGames = functions.https.onRequest(async (req, res) => {
     
     try {
         var userId = req.query.userId;
-        console.log('-->userId:', userId);
         var gameId = req.query.gameId;
-        console.log('-->gameId:', gameId);
         var type = req.query.type;
-        console.log('-->type  :', type);
 
         if(userId === null || userId === undefined)
             return res.status(400).send(getErrorMessage(req, "Userid is null or undefined!"));
-
-        console.log('-->userId founded');
 
         if(gameId !== null && gameId !== undefined){
             var listRefGift = admin.database().ref('/' + DB_USER_GAMES + '/' + userId + '/' + gameId + '/');
@@ -731,12 +716,10 @@ exports.listUserGames = functions.https.onRequest(async (req, res) => {
                             snapshotMap.set(key, childSnapshot.val());
                           }
                     });
-
                     listRef.off('value', listener);
                     return res.status(200).send(getJSONFromMap(snapshotMap));
                 });
             }
-           
         }else{
             return res.status(400).send(getErrorMessage(req, 'GameId or type is null or undefined!'));
         }
