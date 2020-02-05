@@ -78,7 +78,8 @@ exports.listUsers = functions.https.onRequest(async (req, res) => {
             var listRef = admin.database().ref('/' + DB_USER + '/' + userid);
             var listener = listRef.on('value', snapshot => {
                 listRef.off('value', listener);
-                return res.status(200).send(snapshot.val());
+                const json = {[snapshot.key] : snapshot};
+                return res.status(200).send(json);
             });
         }else if(idList !== null && idList !== undefined){
 
@@ -99,13 +100,8 @@ exports.listUsers = functions.https.onRequest(async (req, res) => {
                       else return true;
                     })
                 });
-
-                const myJson = {};
-                myJson.snapshotMap = mapToObj(snapshotMap);
-                const json = JSON.stringify(myJson);
-                    
                 listRefForId.off('value', listenerForId);
-                return res.status(200).send(json);
+                return res.status(200).send(getJSONFromMap(snapshotMap));
             });
 
         }else{
@@ -151,7 +147,6 @@ exports.saveUserDetail = functions.https.onRequest(async (req, res) => {
   }
 });
 
-
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listUserDetails?userid=-M-6OgowiJqdmdYcccc
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listUserDetails?userIdList=["-M-6OgowiJqdmdYcccc", "xxx"]
 exports.listUserDetails = functions.https.onRequest(async (req, res) => {
@@ -165,7 +160,8 @@ exports.listUserDetails = functions.https.onRequest(async (req, res) => {
             var listRef = admin.database().ref('/' + DB_USER_DETAIL + '/' + userid);
             var listener = listRef.on('value', snapshot => {
                 listRef.off('value', listener);
-                return res.status(200).send(snapshot.val());
+                const json = {[snapshot.key] : snapshot};
+                return res.status(200).send(json);
             });
         }else if(idList !== null && idList !== undefined){
 
@@ -186,13 +182,8 @@ exports.listUserDetails = functions.https.onRequest(async (req, res) => {
                       else return true;
                     })
                 });
-
-                const myJson = {};
-                myJson.snapshotMap = mapToObj(snapshotMap);
-                const json = JSON.stringify(myJson);
-                    
                 listRefForId.off('value', listenerForId);
-                return res.status(200).send(json);
+                return res.status(200).send(getJSONFromMap(snapshotMap));
             });
 
         }else{
@@ -271,14 +262,8 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
                             snapshotMap.set(key, childSnapshot.val());
                           }
                     });
-                    const myJson = {};
-                    myJson.snapshotMap = mapToObj(snapshotMap);
-
-                    const json = JSON.stringify(myJson);
-                    console.log('json:' , json);
-                    
                     listRef.off('value', listener);
-                    return res.status(200).send(json);
+                    return res.status(200).send(getJSONFromMap(snapshotMap));
                 });
             }
         }else if(idList !== null && idList !== undefined){
@@ -299,13 +284,8 @@ exports.listQuestions = functions.https.onRequest(async (req, res) => {
                       else return true;
                     })
                 });
-
-                const myJson = {};
-                myJson.snapshotMap = mapToObj(snapshotMap);
-                const json = JSON.stringify(myJson);
-                    
                 listRefForId.off('value', listenerForId);
-                return res.status(200).send(json);
+                return res.status(200).send(getJSONFromMap(snapshotMap));
             });
 
         }else{
@@ -367,7 +347,8 @@ exports.listGames = functions.https.onRequest(async (req, res) => {
             var listRefGame = admin.database().ref('/' + DB_GAME + '/' + gameId);
             var listenerGame = listRefGame.on('value', snapshot => {
                 listRefGame.off('value', listenerGame);
-                return res.status(200).send(snapshot.val());
+                const json = {[snapshot.key] : snapshot};
+                return res.status(200).send(json);
             });
         }else if(idList !== null && idList !== undefined){
 
@@ -388,13 +369,8 @@ exports.listGames = functions.https.onRequest(async (req, res) => {
                       else return true;
                     })
                 });
-
-                const myJson = {};
-                myJson.snapshotMap = mapToObj(snapshotMap);
-                const json = JSON.stringify(myJson);
-                    
                 listRefForId.off('value', listenerForId);
-                return res.status(200).send(json);
+                return res.status(200).send(getJSONFromMap(snapshotMap));
             });
 
         }else if(type !== null && type !== undefined){
@@ -418,14 +394,8 @@ exports.listGames = functions.https.onRequest(async (req, res) => {
                             snapshotMap.set(key, childSnapshot.val());
                           }
                     });
-                    const myJson = {};
-                    myJson.snapshotMap = mapToObj(snapshotMap);
-
-                    const json = JSON.stringify(myJson);
-                    console.log('json:' , json);
-                    
                     listRef.off('value', listener);
-                    return res.status(200).send(json);
+                    return res.status(200).send(getJSONFromMap(snapshotMap));
                 });
             }
            
@@ -483,7 +453,8 @@ exports.listGameWinners = functions.https.onRequest(async (req, res) => {
             var listRefGame = admin.database().ref('/' + DB_GAME_WINNERS + '/' + gameId);
             var listenerGame = listRefGame.on('value', snapshot => {
                 listRefGame.off('value', listenerGame);
-                return res.status(200).send(snapshot.val());
+                const json = {[snapshot.key] : snapshot};
+                return res.status(200).send(json);
             });
         }else if(userId !== null && userId !== undefined){
             
@@ -504,12 +475,8 @@ exports.listGameWinners = functions.https.onRequest(async (req, res) => {
                         }
                     });       
                 });
-                const myJson = {};
-                myJson.snapshotMap = mapToObj(snapshotMap);
-                const json = JSON.stringify(myJson);
-
                 listRefUser.off('value', listenerUser);
-                return res.status(200).send(json);
+                return res.status(200).send(getJSONFromMap(snapshotMap));
             });
         }else if(idList !== null && idList !== undefined){
 
@@ -530,13 +497,8 @@ exports.listGameWinners = functions.https.onRequest(async (req, res) => {
                       else return true;
                     })
                 });
-
-                const myJson = {};
-                myJson.snapshotMap = mapToObj(snapshotMap);
-                const json = JSON.stringify(myJson);
-                    
                 listRefForId.off('value', listenerForId);
-                return res.status(200).send(json);
+                return res.status(200).send(getJSONFromMap(snapshotMap));
             });
 
         }else{
@@ -613,7 +575,7 @@ exports.saveGameGift = functions.https.onRequest(async (req, res) => {
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listGameGifts?giftIdList=["-M-Gzb9A37mAFdAwXA8e", "-M-H5-Zs3j1ATpO9D-Bn"]
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listGameGifts?type=ALL
 // type=ALL, type=ACTIVE, type=PASSIVE
-exports.listGameGifts = functions.https.onRequest(async (req, res) => {
+exports.listGameGifts = functions.https.onRequest((req, res) => {
     console.log("listGameGifts******************************" );
     
     try {
@@ -625,7 +587,8 @@ exports.listGameGifts = functions.https.onRequest(async (req, res) => {
             var listRefGift = admin.database().ref('/' + DB_GAME_GIFTS + '/' + giftId);
             var listenerGift = listRefGift.on('value', snapshot => {
                 listRefGift.off('value', listenerGift);
-                return res.status(200).send(snapshot.val());
+                const json = {[snapshot.key] : snapshot};
+                return res.status(200).send(json);
             });
         }else if(idList !== null && idList !== undefined){
 
@@ -646,13 +609,8 @@ exports.listGameGifts = functions.https.onRequest(async (req, res) => {
                       else return true;
                     })
                 });
-
-                const myJson = {};
-                myJson.snapshotMap = mapToObj(snapshotMap);
-                const json = JSON.stringify(myJson);
-                    
                 listRefForId.off('value', listenerForId);
-                return res.status(200).send(json);
+                return res.status(200).send(getJSONFromMap(snapshotMap));
             });
 
         }else if(type !== null && type !== undefined){
@@ -676,14 +634,8 @@ exports.listGameGifts = functions.https.onRequest(async (req, res) => {
                             snapshotMap.set(key, childSnapshot.val());
                           }
                     });
-                    const myJson = {};
-                    myJson.snapshotMap = mapToObj(snapshotMap);
-
-                    const json = JSON.stringify(myJson);
-                    console.log('json:' , json);
-                    
                     listRef.off('value', listener);
-                    return res.status(200).send(json);
+                    return res.status(200).send(getJSONFromMap(snapshotMap));
                 });
             }
            
@@ -734,25 +686,29 @@ exports.saveUserGame = functions.https.onRequest(async (req, res) => {
 
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listUserGames?userId=-M-6OgowiJqdmdYcccc&gameId=-M-6OSOZC7j6KCcccc
 // https://us-central1-colorful-intelligence.cloudfunctions.net/listUserGames?userId=-M-6OgowiJqdmdYcccc&type=ALL
-// https://us-central1-colorful-intelligence.cloudfunctions.net/listUserGames?type=ALL
 // type=ALL, type=WIN, type=LOSE
 exports.listUserGames = functions.https.onRequest(async (req, res) => {
     console.log("listUserGames******************************" );
     
     try {
         var userId = req.query.userId;
+        console.log('-->userId:', userId);
         var gameId = req.query.gameId;
+        console.log('-->gameId:', gameId);
         var type = req.query.type;
+        console.log('-->type  :', type);
 
-        if(userId !== null && userId !== undefined)
-            return res.status(400).send(getErrorMessage(req, 'Userid is null or undefined!'));
+        if(userId === null || userId === undefined)
+            return res.status(400).send(getErrorMessage(req, "Userid is null or undefined!"));
+
+        console.log('-->userId founded');
 
         if(gameId !== null && gameId !== undefined){
             var listRefGift = admin.database().ref('/' + DB_USER_GAMES + '/' + userId + '/' + gameId + '/');
             var listenerGift = listRefGift.on('value', snapshot => {
-                console.log('snapshot:', snapshot);
+                const json = {[snapshot.key] : snapshot};
                 listRefGift.off('value', listenerGift);
-                return res.status(200).send(snapshot.val());
+                return res.status(200).send(json);
             });
         }else if(type !== null && type !== undefined){
             if(type !== USER_GAME_TYPE_LOSE && type !== USER_GAME_TYPE_WIN && type !== USER_GAME_TYPE_ALL){
@@ -775,14 +731,9 @@ exports.listUserGames = functions.https.onRequest(async (req, res) => {
                             snapshotMap.set(key, childSnapshot.val());
                           }
                     });
-                    const myJson = {};
-                    myJson.snapshotMap = mapToObj(snapshotMap);
 
-                    const json = JSON.stringify(myJson);
-                    console.log('json:' , json);
-                    
                     listRef.off('value', listener);
-                    return res.status(200).send(json);
+                    return res.status(200).send(getJSONFromMap(snapshotMap));
                 });
             }
            
@@ -801,6 +752,13 @@ function getErrorMessage(req, error){
         "request":req.query,
         "message":error.message
     });
+    return json;
+}
+
+function getJSONFromMap(snapshotMap){
+    const myJson = {};
+    myJson.snapshotMap = mapToObj(snapshotMap);
+    const json = JSON.stringify(myJson.snapshotMap);
     return json;
 }
 
