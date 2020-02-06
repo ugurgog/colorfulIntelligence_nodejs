@@ -17,6 +17,7 @@ const DB_GAME_GIFTS = 'GAME_GIFTS';
 const DB_USER = 'USER';
 const DB_USER_DETAIL = 'USER_DETAIL';
 const DB_USER_GAMES = 'USER_GAMES';
+const DB_DEVICE_TOKEN = 'DEVICE_TOKEN';
 
 // Question list types
 const LIST_TYPE_ACTIVE = 'ACTIVE';
@@ -723,6 +724,52 @@ exports.listUserGames = functions.https.onRequest(async (req, res) => {
         }else{
             return res.status(400).send(getErrorMessage(req, 'GameId or type is null or undefined!'));
         }
+  } catch (error) {
+        return res.status(400).send(getErrorMessage(req, error));
+  }
+});
+
+//***************************DEVICE TOKEN FUNCTIONS ***********************************************
+// https://us-central1-colorful-intelligence.cloudfunctions.net/saveDeviceToken?reqQuery={"SignIn" : "E","Token" : "HSJAHSJHAJHJSHJHJHJHJHASJH"}&userId=-M-6OgowiJqdmdYcccc
+exports.saveDeviceToken = functions.https.onRequest(async (req, res) => {
+    console.log("saveGameGift******************************" );
+    
+    try {
+        const reqQuery = req.query.reqQuery;
+        var userId = req.query.userId;
+
+        var jsonResponse = JSON.parse(reqQuery);
+
+        if(userId === null || userId === undefined)
+            return res.status(400).send(getErrorMessage(req, 'UserId is not valid!'));
+
+        if (jsonResponse.status === 0) {
+            return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
+        } else {
+            const snapshot = await admin.database().ref('/' + DB_DEVICE_TOKEN + '/' + userId + '/').set(jsonResponse);
+        }
+        return res.status(200).send("Device Token update successful");
+  } catch (error) {
+        return res.status(400).send(getErrorMessage(req, error));
+  }
+});
+
+// https://us-central1-colorful-intelligence.cloudfunctions.net/getDeviceToken?userId=-M-6OgowiJqdmdYcccc
+exports.getDeviceToken = functions.https.onRequest(async (req, res) => {
+    console.log("listUserGames******************************" );
+    
+    try {
+        var userId = req.query.userId;
+
+        if(userId === null || userId === undefined)
+            return res.status(400).send(getErrorMessage(req, "Userid is null or undefined!"));
+
+        var listRefGift = admin.database().ref('/' + DB_DEVICE_TOKEN + '/' + userId + '/');
+        var listenerGift = listRefGift.on('value', snapshot => {
+            const json = {[snapshot.key] : snapshot};
+            listRefGift.off('value', listenerGift);
+            return res.status(200).send(json);
+        });
   } catch (error) {
         return res.status(400).send(getErrorMessage(req, error));
   }
