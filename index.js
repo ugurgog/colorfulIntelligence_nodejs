@@ -47,7 +47,7 @@ exports.saveUser = functions.https.onRequest(async (req, res) => {
             return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
         } else {
             if(userid !== null && userid !== undefined){
-                const snapshot = await admin.database().ref('/' + DB_USER + '/' + userid + '/').set(jsonResponse);
+                const snapshot = await admin.database().ref('/' + DB_USER + '/' + userid + '/').update(jsonResponse);
             }
             else{
                 const snapshot = await admin.database().ref('/' + DB_USER).push(jsonResponse);
@@ -129,7 +129,7 @@ exports.saveUserDetail = functions.https.onRequest(async (req, res) => {
             return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
         } else {
             if(userid !== null && userid !== undefined){
-                const snapshot = await admin.database().ref('/' + DB_USER_DETAIL + '/' + userid + '/').set(jsonResponse);
+                const snapshot = await admin.database().ref('/' + DB_USER_DETAIL + '/' + userid + '/').update(jsonResponse);
             }
             else{
                 const snapshot = await admin.database().ref('/' + DB_USER_DETAIL).push(jsonResponse);
@@ -213,7 +213,7 @@ exports.saveQuestion = functions.https.onRequest(async (req, res) => {
             return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
         } else {
             if(id !== null && id !== undefined){
-                const snapshot = await admin.database().ref('/' + DB_QUESTIONS + '/' + id + '/').set(jsonResponse);
+                const snapshot = await admin.database().ref('/' + DB_QUESTIONS + '/' + id + '/').update(jsonResponse);
             }
             else{
                 const snapshot = await admin.database().ref('/' + DB_QUESTIONS).push(jsonResponse);
@@ -311,7 +311,7 @@ exports.saveGame = functions.https.onRequest(async (req, res) => {
             return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
         } else {
             if(id !== null && id !== undefined){
-                const snapshot = await admin.database().ref('/' + DB_GAME + '/' + id + '/').set(jsonResponse);
+                const snapshot = await admin.database().ref('/' + DB_GAME + '/' + id + '/').update(jsonResponse);
             }
             else{
                 const snapshot = await admin.database().ref('/' + DB_GAME).push(jsonResponse);
@@ -422,7 +422,7 @@ exports.saveGameWinner = functions.https.onRequest(async (req, res) => {
             return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
         } else {
             if((userId !== null && userId !== undefined) && (gameId !== null && gameId !== undefined)){
-                const snapshot = await admin.database().ref('/' + DB_GAME_WINNERS + '/' + gameId + '/' + userId).set(jsonResponse);
+                const snapshot = await admin.database().ref('/' + DB_GAME_WINNERS + '/' + gameId + '/' + userId).update(jsonResponse);
             }
             else{
                 return res.status(400).send(getErrorMessage(req, 'GameId or UserId is not valid!'));
@@ -548,7 +548,7 @@ exports.saveGameGift = functions.https.onRequest(async (req, res) => {
             return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
         } else {
             if(id !== null && id !== undefined){
-                const snapshot = await admin.database().ref('/' + DB_GAME_GIFTS + '/' + id + '/').set(jsonResponse);
+                const snapshot = await admin.database().ref('/' + DB_GAME_GIFTS + '/' + id + '/').update(jsonResponse);
             }
             else{
                 const snapshot = await admin.database().ref('/' + DB_GAME_GIFTS).push(jsonResponse);
@@ -658,7 +658,7 @@ exports.saveUserGame = functions.https.onRequest(async (req, res) => {
             return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
         } else {
             if(userId !== null && userId !== undefined && gameId !== null && gameId !== undefined){
-                const snapshot = await admin.database().ref('/' + DB_USER_GAMES + '/' + userId + '/' + gameId + '/' ).set(jsonResponse);
+                const snapshot = await admin.database().ref('/' + DB_USER_GAMES + '/' + userId + '/' + gameId + '/' ).update(jsonResponse);
             }
             else{
                 const snapshot = await admin.database().ref('/' + DB_USER_GAMES + '/' + userId + '/').push(jsonResponse);
@@ -746,7 +746,7 @@ exports.saveDeviceToken = functions.https.onRequest(async (req, res) => {
         if (jsonResponse.status === 0) {
             return res.status(400).send(getErrorMessage(req, 'Json is not valid!'));
         } else {
-            const snapshot = await admin.database().ref('/' + DB_DEVICE_TOKEN + '/' + userId + '/').set(jsonResponse);
+            const snapshot = await admin.database().ref('/' + DB_DEVICE_TOKEN + '/' + userId + '/').update(jsonResponse);
         }
         return res.status(200).send("Device Token update successful");
   } catch (error) {
